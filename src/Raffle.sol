@@ -23,7 +23,7 @@
 // ESTAMOS CONDIFICANDO UN PATRON DE DISEÑO LLAMADO CHEX EFFECTS INTERACTIONS (C.E.I)
 
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.19;
 import { console }  from "forge-std/Test.sol";
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
 import { VRFConsumerBaseV2 } from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
@@ -138,7 +138,7 @@ contract Raffle is VRFConsumerBaseV2 {
         s_raffleState = RaffleState.CALCULATING;
         // Solo seremos Nosotros de solicitar el ganador
         // vamos hacer una solicitud al nodo de chainlink para que nos de un numero aleatorio
-        uint256 requestId = i_vrfCoordinator.requestRandomWords( // solicita palabras aleatorias
+        i_vrfCoordinator.requestRandomWords( // solicita palabras aleatorias
             i_gasLane, // keyHash =>gas lane
             i_subscriptionId,
             REQUEST_CONFIRMATIONS,
@@ -178,8 +178,16 @@ contract Raffle is VRFConsumerBaseV2 {
 
     /** Getter function */
 
-    function getRaffleEntraceFee() public view returns (uint256) {
+    function getRaffleEntraceFee() external view returns (uint256) {
         return i_raffleEntranceFee;
+    }
+    
+    function getRaffleState() external view returns (RaffleState) {
+        return s_raffleState;
+    }
+    
+    function getPlayer(uint256 indexPlayer) external view returns (address) {
+        return s_participants[indexPlayer];
     }
     
 }

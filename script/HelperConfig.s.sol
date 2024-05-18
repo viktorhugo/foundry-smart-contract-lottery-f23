@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.25;
+pragma solidity 0.8.19;
 
 import { Script } from "forge-std/Script.sol";
 import { VRFCoordinatorV2Mock } from "@chainlink/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol";
+import { LinkToken } from "../test/mocks/LinkToken.sol";
 
 contract HelperConfig is Script {
 
@@ -12,7 +13,8 @@ contract HelperConfig is Script {
         address vrfCoordinator; 
         bytes32 gasLane; 
         uint64 subscriptionId; 
-        uint32 callbackGasLimit;    
+        uint32 callbackGasLimit;
+        address link; 
     }
 
     NetworkConfig public activeNetworkConfig;
@@ -34,7 +36,8 @@ contract HelperConfig is Script {
             vrfCoordinator: address(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625),
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             subscriptionId: 0, // Update this with our SubID
-            callbackGasLimit: 500000 // 500,000 GAAS
+            callbackGasLimit: 500000,
+            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789 // 500,000 GAAS
         });
     }
 
@@ -53,13 +56,16 @@ contract HelperConfig is Script {
         );
         vm.stopBroadcast();
 
+        LinkToken linkToken = new LinkToken();
+
         return NetworkConfig({
             raffleEntranceFee: 0.01 ether,
             interval: 30,
             vrfCoordinator: address(vrfCoordinatorMock),
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             subscriptionId: 0, // our script will add this
-            callbackGasLimit: 500000 // 500,000 GAAS
+            callbackGasLimit: 500000, // 500,000 GAAS
+            link: address(linkToken)
         });
     }
 
@@ -70,7 +76,8 @@ contract HelperConfig is Script {
             vrfCoordinator: 0x271682DEB8C4E0901D1a1550aD2e64D568E69909,
             gasLane: 0xff8dedfbfa60af186cf3c830acbc32c05aae823045ae5ea7da1e45fbfaba4f92, // 500 gwei Clave Hash
             subscriptionId: 0, // Update this with our SubID
-            callbackGasLimit: 500000 // 500,000 GAAS
+            callbackGasLimit: 500000, // 500,000 GAAS
+            link: 0x514910771AF9Ca656af840dff83E8264EcF986CA
         });
     }
 

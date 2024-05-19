@@ -70,6 +70,7 @@ contract Raffle is VRFConsumerBaseV2 {
     /** Events */
     event RaffleEntered(address indexed player);
     event PickedWinner(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     constructor(
         uint256 raffleEntranceFee, 
@@ -92,6 +93,7 @@ contract Raffle is VRFConsumerBaseV2 {
     // queremos que la gente pague por un boleto para participar en el sorteo con un precio de entrada
     function enterRaffle() external payable {
         // check raffleEntranceFee
+        console.log('check', msg.value, 'i_raffleEntranceFee', i_raffleEntranceFee);
         if (msg.value < i_raffleEntranceFee) revert Raffle__NotEnoughtETHSent();
         // check if raffle is open
         if (s_raffleState != RaffleState.OPEN) revert Raffle__RaffleNotOpen();
@@ -120,13 +122,17 @@ contract Raffle is VRFConsumerBaseV2 {
         bool isOpen = RaffleState.OPEN == s_raffleState;
         bool hasPlayers = s_participants.length > 0;
         bool hasBalance = address(this).balance > 0;
+        console.log('hasTimePass', hasTimePass);
+        console.log('isOpen', isOpen);
+        console.log( 'hasPlayers', hasPlayers);
+        console.log('hasBalance', hasBalance);
         upkeepNeeded = (hasTimePass && isOpen && hasPlayers && hasBalance);
         
         return (upkeepNeeded, /* performData */"0x0");
     }
 
     
-    function performUpkeep(bytes calldata /* performData */) external {
+    function performUpkeep(bytes calldata /* performData */) external { 
         // check checkUpkeep
         (bool upkeepNeeded, ) = checkUpkeep("");
         if (!upkeepNeeded) revert Raffle__UpkkepNotNeeded(
@@ -138,14 +144,14 @@ contract Raffle is VRFConsumerBaseV2 {
         s_raffleState = RaffleState.CALCULATING;
         // Solo seremos Nosotros de solicitar el ganador
         // vamos hacer una solicitud al nodo de chainlink para que nos de un numero aleatorio
-        i_vrfCoordinator.requestRandomWords( // solicita palabras aleatorias
+        uint256 requestId = i_vrfCoordinator.requestRandomWords( // solicita palabras aleatorias
             i_gasLane, // keyHash =>gas lane
             i_subscriptionId,
             REQUEST_CONFIRMATIONS,
             i_callbackGasLimit, // MAX GAS
             NUMBER_WORDS // numero de numeros aleatorios que queremos
         );
-        
+        emit RequestedRaffleWinner(requestId);
     }
     
     // get a random number
@@ -188,6 +194,18 @@ contract Raffle is VRFConsumerBaseV2 {
     
     function getPlayer(uint256 indexPlayer) external view returns (address) {
         return s_participants[indexPlayer];
+    }
+    
+    function getRecentWinner() external view returns (address) {
+        return s_recentWinner;
+    }
+    
+    function getTotalParticipants() external view returns (uint256) {
+        return s_participants.length;
+    }
+    
+    function getLastTimestamp() external view returns (uint256) {
+        return s_lastTimeStamp;
     }
     
 }

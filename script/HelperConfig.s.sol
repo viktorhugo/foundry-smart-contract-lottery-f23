@@ -15,6 +15,7 @@ contract HelperConfig is Script {
         uint64 subscriptionId; 
         uint32 callbackGasLimit;
         address link; 
+        uint256 deployerKey;
     }
 
     NetworkConfig public activeNetworkConfig;
@@ -29,7 +30,7 @@ contract HelperConfig is Script {
         }
     }
 
-    function getSepoliaEthConfig () public pure returns (NetworkConfig memory) {
+    function getSepoliaEthConfig () public view returns (NetworkConfig memory) {
         return NetworkConfig({
             raffleEntranceFee: 0.01 ether,
             interval: 30,
@@ -37,7 +38,8 @@ contract HelperConfig is Script {
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             subscriptionId: 0, // Update this with our SubID
             callbackGasLimit: 500000,
-            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789 // 500,000 GAAS
+            link: 0x779877A7B0D9E8603169DdbD7836e478b4624789, // 500,000 GAAS
+            deployerKey: vm.envUint("ADDRESS_SENDER")
         });
     }
 
@@ -65,11 +67,12 @@ contract HelperConfig is Script {
             gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
             subscriptionId: 0, // our script will add this
             callbackGasLimit: 500000, // 500,000 GAAS
-            link: address(linkToken)
+            link: address(linkToken),
+            deployerKey: vm.envUint("ADDRESS_SENDER")
         });
     }
 
-    function getMainnetEthConfig () public pure returns (NetworkConfig memory) {
+    function getMainnetEthConfig () public view returns (NetworkConfig memory) {
         return NetworkConfig({
             raffleEntranceFee: 0.01 ether,
             interval: 30,
@@ -77,7 +80,8 @@ contract HelperConfig is Script {
             gasLane: 0xff8dedfbfa60af186cf3c830acbc32c05aae823045ae5ea7da1e45fbfaba4f92, // 500 gwei Clave Hash
             subscriptionId: 0, // Update this with our SubID
             callbackGasLimit: 500000, // 500,000 GAAS
-            link: 0x514910771AF9Ca656af840dff83E8264EcF986CA
+            link: 0x514910771AF9Ca656af840dff83E8264EcF986CA,
+            deployerKey: vm.envUint("ADDRESS_SENDER")
         });
     }
 

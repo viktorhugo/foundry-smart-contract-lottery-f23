@@ -16,7 +16,8 @@ contract DeployRaffle is Script{
             bytes32 gasLane,
             uint64 subscriptionId,
             uint32 callbackGasLimit,
-            address link
+            address link,
+            uint256 deployerKey
         ) = helperConfig.activeNetworkConfig();
 
         // si no tenemos un subscription lo creamos y lo financiamos
@@ -24,12 +25,12 @@ contract DeployRaffle is Script{
             // wea rea going to need to create a subscription
             console.log("creating subscription on chainId:", block.chainid);
             CreateSubscription createSubscription = new CreateSubscription();
-            subscriptionId = createSubscription.createSubscription(vrfCoordinator);
+            subscriptionId = createSubscription.createSubscription(vrfCoordinator, deployerKey);
 
             // Fund the subscription
             console.log("funding subscription on chainId:", block.chainid);
             FundSubscription fundSubscription = new FundSubscription();
-            fundSubscription.fundSubscription(vrfCoordinator, subscriptionId, link);
+            fundSubscription.fundSubscription(vrfCoordinator, subscriptionId, link, deployerKey);
         }
 
         vm.startBroadcast();
@@ -45,7 +46,7 @@ contract DeployRaffle is Script{
         vm.stopBroadcast();
 
         AddConsumer addConsumer = new AddConsumer();
-        addConsumer.addConsumer(address(raffle), vrfCoordinator, subscriptionId);
+        addConsumer.addConsumer(address(raffle), vrfCoordinator, subscriptionId, deployerKey);
 
         return (raffle, helperConfig);
     }

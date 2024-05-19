@@ -15,13 +15,13 @@ contract CreateSubscription is  Script {
 
     function createSubscriptionUsingConfig() public returns (uint64) {
         HelperConfig helperConfig = new HelperConfig();
-        ( , , address vrfCoordinator, , , , ) = helperConfig.activeNetworkConfig();
-        return createSubscription(vrfCoordinator);
+        ( , , address vrfCoordinator, , , , ,uint256 deployerKey ) = helperConfig.activeNetworkConfig();
+        return createSubscription(vrfCoordinator, deployerKey);
     }
 
-    function createSubscription(address vrfCoordinator) public returns (uint64) {
+    function createSubscription(address vrfCoordinator, uint256 deployerKey) public returns (uint64) {
         console.log("creating subscription on chainId:", block.chainid);
-        vm.startBroadcast();
+        vm.startBroadcast(deployerKey);
         uint64 subscriptionId = VRFCoordinatorV2Mock(vrfCoordinator).createSubscription();
         console.log("Your subscriptionId: ", subscriptionId);
         console.log(" Please update subscriptionId in HelperConfig.s.sol");
@@ -48,25 +48,26 @@ contract FundSubscription is  Script {
             , 
             uint64 subscriptionId, 
             , 
-            address link 
+            address link,
+            uint256 deployerKey
         ) = helperConfig.activeNetworkConfig();
 
         // vamos a nesecitar el link token 
-        fundSubscription(vrfCoordinator, subscriptionId, link);
+        fundSubscription(vrfCoordinator, subscriptionId, link, deployerKey);
     }
 
-    function fundSubscription(address vrfCoordinator, uint64 subscriptionId, address link) public {
+    function fundSubscription(address vrfCoordinator, uint64 subscriptionId, address link, uint256 deployerKey) public {
         console.log("Funded subscriptionId: ", subscriptionId);
         console.log("Funded VRFcoordinator: ", vrfCoordinator);
         console.log("Funding subscription on chainId:", block.chainid);
 
         // si estamos en una cadena local esto significa que tenemos un mock implementado
         if (block.chainid == 31337) {
-            vm.startBroadcast();
+            vm.startBroadcast(deployerKey);
             VRFCoordinatorV2Mock(vrfCoordinator).fundSubscription(subscriptionId, FUND_AMOUNT);
             vm.stopBroadcast();
         } else {
-            vm.startBroadcast();
+            vm.startBroadcast(deployerKey);
             LinkToken linkToken = LinkToken(link);
             linkToken.transferAndCall(vrfCoordinator, FUND_AMOUNT, abi.encode(subscriptionId));
             vm.stopBroadcast();
@@ -89,17 +90,19 @@ contract AddConsumer is  Script {
             , 
             uint64 subscriptionId, 
             , 
-            
+            ,
+            uint256 deployerKey
         ) = helperConfig.activeNetworkConfig();
-        addConsumer(raffle, vrfCoordinator, subscriptionId);
+        addConsumer(raffle, vrfCoordinator, subscriptionId, deployerKey);
     }
 
-    function addConsumer(address raffle, address vrfCoordinator, uint64 subscriptionId) public {
+    // ahora nuestra configuracion es totalmente inteligente como para saber si estamos en una red local o maintest o mainnet
+    function addConsumer(address raffle, address vrfCoordinator, uint64 subscriptionId, uint256 deployerKey) public {
         console.log("Adding consumer CONTRACT:", raffle);
         console.log("Using coordinator :", vrfCoordinator);
         console.log("SubscriptionId :", subscriptionId);
         console.log("On chainId :", block.chainid);
-        vm.startBroadcast();
+        vm.startBroadcast(deployerKey);
         VRFCoordinatorV2Mock(vrfCoordinator).addConsumer(subscriptionId, raffle);
         vm.stopBroadcast();
     }
